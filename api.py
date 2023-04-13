@@ -14,6 +14,8 @@ from scraper import meta_scrape
 #To save the reviews in a dataframe 
 import pandas as pd
 cid = '56333853e8064d9c95e1067d8d90b76c'
+secret = '52d71e473eb641b3af44c9fe9b960374'
+
 try:
     secret
     print ("Secret set")

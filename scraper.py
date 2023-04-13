@@ -38,3 +38,5 @@ def meta_scrape():
     table_df.to_csv('table.csv')
 
     return(table_df)
+
+print(meta_scrape())
