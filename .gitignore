@@ -1,0 +1,59 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.cache*
+*.log
+
+# C extensions
+*.so
+
+# Virtual environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# VS Code settings
+.vscode/
+
+# Pytest cache
+.pytest_cache/
+
+# MyPy cache
+.mypy_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+*.cover
+*.py,cover
+.coverage.*
+
+# Logs and debug files
+*.log
+*.out
+*.err
+
+# Data files
+*.csv
+*.tsv
+*.dat
+*.db
+*.sqlite
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.p12
+*.json
+
+# Ignore API keys or sensitive files
+api.log
