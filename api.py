@@ -21,22 +21,27 @@ import sys
 if len(sys.argv) != 2:
     print("Usage: python example.py <argument>")
     argument = "90day"
+    url = 'https://www.metacritic.com/browse/albums/score/metascore/90day/filtered'
+
+
 else:
     argument = sys.argv[1]
     print(f"Received argument: {argument}")
+    url = f'https://www.metacritic.com/browse/albums/score/metascore/year?sort=desc&year_selected={argument}'
+
 
 if argument == "2025":
-    print("2025")
-    url = 'https://www.metacritic.com/browse/albums/score/metascore/year?sort=desc&year_selected=2025'
     the_playlist = '78IDU0bUwB0O0Q2fyCvUAK' # metacritic 2025
+elif argument == "2024":
+    the_playlist = '62TENfsKRvYddAnR5wxpe2' # metacritic 2024
+elif argument == "2023":
+    the_playlist = '0yHjOzt50oqA6KsWUkZTDK' # metacritic 2023
+elif argument == "2022":
+    the_playlist = '2pG0y8IZlcGvVMsA94fAkh' # metacritic 2022
 else:
-    print("90 day")
-    url = 'https://www.metacritic.com/browse/albums/score/metascore/90day/filtered'
     the_playlist = '1wciSk2nWiRIVHFNdK4rJu' # metacritic 90 day
 
-
 def meta_scrape(url):
-
 
     user_agent = {'User-agent': 'Mozilla/5.0'}
     response = requests.get(url, headers = user_agent)
