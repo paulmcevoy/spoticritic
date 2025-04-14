@@ -13,33 +13,12 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import schedule
+import time
 cid = '56333853e8064d9c95e1067d8d90b76c'
 secret = '52d71e473eb641b3af44c9fe9b960374'
 
 import sys
-
-if len(sys.argv) != 2:
-    print("Usage: python example.py <argument>")
-    argument = "90day"
-    url = 'https://www.metacritic.com/browse/albums/score/metascore/90day/filtered'
-
-
-else:
-    argument = sys.argv[1]
-    print(f"Received argument: {argument}")
-    url = f'https://www.metacritic.com/browse/albums/score/metascore/year?sort=desc&year_selected={argument}'
-
-
-if argument == "2025":
-    the_playlist = '78IDU0bUwB0O0Q2fyCvUAK' # metacritic 2025
-elif argument == "2024":
-    the_playlist = '62TENfsKRvYddAnR5wxpe2' # metacritic 2024
-elif argument == "2023":
-    the_playlist = '0yHjOzt50oqA6KsWUkZTDK' # metacritic 2023
-elif argument == "2022":
-    the_playlist = '2pG0y8IZlcGvVMsA94fAkh' # metacritic 2022
-else:
-    the_playlist = '1wciSk2nWiRIVHFNdK4rJu' # metacritic 90 day
 
 def meta_scrape(url):
 
@@ -74,77 +53,121 @@ def meta_scrape(url):
 
     return table_df
 
-try:
-    secret
-    print ("Secret set")
-except:
-    print ("Secret not set")
-    sys.exit(0)
+def api_code():
 
+    if len(sys.argv) != 2:
+        print("Usage: python example.py <argument>")
+        argument = "90day"
+        url = 'https://www.metacritic.com/browse/albums/score/metascore/90day/filtered'
 
-username = 'paulmcevoy@gmail.com' 
-userid='895268bd5d614308'
-
-#Authentication - without user
-client_credentials_manager = SpotifyClientCredentials(client_id=cid, client_secret=secret)
-
-import spotipy.util as util
-token = util.prompt_for_user_token(
-    username=username,  
-    scope='playlist-modify-public', 
-    client_id=cid, 
-    client_secret=secret, 
-    redirect_uri="http://localhost:8888/callback"
-)
-sp = spotipy.Spotify(auth=token)
-
-# sp = spotipy.Spotify(client_credentials_manager = client_credentials_manager)
-
-try:
-    table_df = meta_scrape(url=url)
-except Exception as e:
-    logging.info(f'Could not scrape due to: ',{e})
-
-table_df = table_df.head(20)
-# first remove all tracks
-playlist_has_tracks = True
-while(playlist_has_tracks):
-    tracks_in_playlist = sp.playlist_tracks(playlist_id=the_playlist, fields=None, limit=100, offset=0, market=None)
-    if (tracks_in_playlist['total'] != 0):
-        tracks_to_delete = []
-        for each_track in tracks_in_playlist['items']:
-            tracks_to_delete.append(each_track['track']['id'])
-        sp.user_playlist_remove_all_occurrences_of_tracks(user='895268bd5d614308', playlist_id=the_playlist, tracks=tracks_to_delete)
 
     else:
-        playlist_has_tracks = False
+        argument = sys.argv[1]
+        print(f"Received argument: {argument}")
+        url = f'https://www.metacritic.com/browse/albums/score/metascore/year?sort=desc&year_selected={argument}'
 
 
-total_track_count = 0
-limit_reached = False
-for index, row in table_df.iterrows():
-    track_id_list = []
-    res = sp.search(q="artist:" + row['artist'] + " album:" + row['album'], type="album", limit = 1)
-
-    if res['albums']['items']:
-        album = res['albums']['items'][0]
-
-        table_df.loc[index, 'returned_album'] = album['name']
-        table_df.loc[index, 'album_length'] = album['total_tracks']
-        total_track_count += album['total_tracks']
-        if total_track_count > 199:
-            logging.info("Playlist has reached 200 tracks, stopping.")
-            limit_reached = True
-        if not limit_reached:
-            table_df.loc[index, 'id'] = album['id']
-            track_list = sp.album_tracks(album['id'], limit=50, offset=0, market=None)
-            for each_track in track_list['items']:
-                track_id_list.append(each_track['id'])
-            try:
-                sp.user_playlist_add_tracks(user='895268bd5d614308', playlist_id=the_playlist, tracks=track_id_list, position=None)
-            except Exception as e:
-                print(f'Could not add tracks due to: ', {e})
+    if argument == "2025":
+        the_playlist = '78IDU0bUwB0O0Q2fyCvUAK' # metacritic 2025
+    elif argument == "2024":
+        the_playlist = '62TENfsKRvYddAnR5wxpe2' # metacritic 2024
+    elif argument == "2023":
+        the_playlist = '0yHjOzt50oqA6KsWUkZTDK' # metacritic 2023
+    elif argument == "2022":
+        the_playlist = '2pG0y8IZlcGvVMsA94fAkh' # metacritic 2022
     else:
-        logging.info("No results")
+        the_playlist = '1wciSk2nWiRIVHFNdK4rJu' # metacritic 90 day
 
-table_df.to_csv('results.csv')
+
+    try:
+        secret
+        print ("Secret set")
+    except:
+        print ("Secret not set")
+        sys.exit(0)
+
+
+    username = 'paulmcevoy@gmail.com' 
+    userid='895268bd5d614308'
+
+    #Authentication - without user
+    client_credentials_manager = SpotifyClientCredentials(client_id=cid, client_secret=secret)
+
+    import spotipy.util as util
+    token = util.prompt_for_user_token(
+        username=username,  
+        scope='playlist-modify-public', 
+        client_id=cid, 
+        client_secret=secret, 
+        redirect_uri="http://localhost:8888/callback"
+    )
+    sp = spotipy.Spotify(auth=token)
+
+    # sp = spotipy.Spotify(client_credentials_manager = client_credentials_manager)
+
+    try:
+        table_df = meta_scrape(url=url)
+    except Exception as e:
+        logging.info(f'Could not scrape due to: ',{e})
+
+    table_df = table_df.head(20)
+    # first remove all tracks
+    playlist_has_tracks = True
+    while(playlist_has_tracks):
+        tracks_in_playlist = sp.playlist_tracks(playlist_id=the_playlist, fields=None, limit=100, offset=0, market=None)
+        if (tracks_in_playlist['total'] != 0):
+            tracks_to_delete = []
+            for each_track in tracks_in_playlist['items']:
+                tracks_to_delete.append(each_track['track']['id'])
+            sp.user_playlist_remove_all_occurrences_of_tracks(user='895268bd5d614308', playlist_id=the_playlist, tracks=tracks_to_delete)
+
+        else:
+            playlist_has_tracks = False
+
+
+    total_track_count = 0
+    limit_reached = False
+    for index, row in table_df.iterrows():
+        track_id_list = []
+        res = sp.search(q="artist:" + row['artist'] + " album:" + row['album'], type="album", limit = 1)
+
+        if res['albums']['items']:
+            album = res['albums']['items'][0]
+
+            table_df.loc[index, 'returned_album'] = album['name']
+            table_df.loc[index, 'album_length'] = album['total_tracks']
+            total_track_count += album['total_tracks']
+            if total_track_count > 199:
+                logging.info("Playlist has reached 200 tracks, stopping.")
+                limit_reached = True
+            if not limit_reached:
+                table_df.loc[index, 'id'] = album['id']
+                track_list = sp.album_tracks(album['id'], limit=50, offset=0, market=None)
+                for each_track in track_list['items']:
+                    track_id_list.append(each_track['id'])
+                try:
+                    sp.user_playlist_add_tracks(user='895268bd5d614308', playlist_id=the_playlist, tracks=track_id_list, position=None)
+                except Exception as e:
+                    print(f'Could not add tracks due to: ', {e})
+        else:
+            logging.info("No results")
+
+    table_df.to_csv('results.csv')
+
+
+
+def job():
+    with open("/home/paul/spoticritic/api.log", "a") as f:
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        f.write("{current_time} Running scheduled task...\n")
+        api_code()
+
+schedule.every().day.at("15:00").do(job)
+
+while True:
+    schedule.run_pending()
+    sleep_time = 3600
+    # create a string that reprensents the current time stamp
+    print(f"Sleeping for {sleep_time} seconds...")
+    time.sleep(sleep_time)
+

@@ -18,3 +18,4 @@ tidalapi==0.8.3
 typing_extensions==4.13.2
 tzdata==2025.2
 urllib3==2.4.0
+schedule==1.2.0
