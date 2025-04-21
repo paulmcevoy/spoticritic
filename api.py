@@ -2,19 +2,21 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import logging
-logging.basicConfig(filename="api.log", level=logging.INFO)
-
+# logging.basicConfig(filename="api.log", level=logging.INFO)
+logging.basicConfig(
+    filename='/home/paul/spoticritic/api.log',           # Log file name
+    filemode='a',                 # Append mode ('w' would overwrite)
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO            # Set minimum log level
+)
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import traceback
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import schedule
-import time
 cid = '56333853e8064d9c95e1067d8d90b76c'
 secret = '52d71e473eb641b3af44c9fe9b960374'
 
@@ -44,7 +46,7 @@ def meta_scrape(url):
             artist_text = artist.text.split('by')[1].strip()
 
         result = {'pos': pos_text, 'artist': artist_text, 'album': album_text, 'score': score_text}
-        print(result)
+        logging.info(result)
         
         # Use pd.concat instead of append
         table_df = pd.concat([table_df, pd.DataFrame([result])], ignore_index=True)
@@ -81,9 +83,9 @@ def api_code():
 
     try:
         secret
-        print ("Secret set")
+        logging.info("Secret set")
     except:
-        print ("Secret not set")
+        logging.info("Secret not set")
         sys.exit(0)
 
 
@@ -148,7 +150,7 @@ def api_code():
                 try:
                     sp.user_playlist_add_tracks(user='895268bd5d614308', playlist_id=the_playlist, tracks=track_id_list, position=None)
                 except Exception as e:
-                    print(f'Could not add tracks due to: ', {e})
+                    logging.error(f'Could not add tracks due to: ', {e})
         else:
             logging.info("No results")
 
@@ -156,18 +158,4 @@ def api_code():
 
 
 
-def job():
-    with open("/home/paul/spoticritic/api.log", "a") as f:
-        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-        f.write("{current_time} Running scheduled task...\n")
-        api_code()
-
-schedule.every().day.at("15:00").do(job)
-
-while True:
-    schedule.run_pending()
-    sleep_time = 3600
-    # create a string that reprensents the current time stamp
-    print(f"Sleeping for {sleep_time} seconds...")
-    time.sleep(sleep_time)
-
+api_code()
